@@ -18,6 +18,8 @@ if (args.length === 0) {
 else {
     analyse_args(args)
         .then(res => {
+            console.log(res);
+
             let argEvent = Object.keys(res)[0].split('--')[1];
             emitter.emit(argEvent, {
                 argument: Object.keys(res),
