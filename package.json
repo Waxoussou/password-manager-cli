@@ -1,0 +1,16 @@
+{
+  "name": "save-cli",
+  "bin": "bin/app.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wax",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^3.0.8",
+    "mongodb": "^3.5.3"
+  }
+}
