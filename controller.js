@@ -1,50 +1,44 @@
-const { save_new_web_service,
-    get_service_credentials,
-    get_all_services_recorded } = require('./lib/dbUtils')
-const { colors, reset } = require('./lib/colors')
+const readline = require('readline');
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: '< show can I help ? >'
+});
 
-exports.start_program = (rl) => {
-    rl.prompt();
-    rl.on('line', line => {
-        line = line.trim().toLowerCase()
-        switch (line) {
-            case 'save':
-                save_new_web_service(rl)
-                break;
-            case 'read':
-                console.log(colors.blue + line + reset);
-                get_service_credentials(rl)
-                break;
-            case 'list':
-                console.log(colors.blue + line + reset);
-                get_all_services_recorded(rl)
-                break;
-            case 'delete':
-                console.log(colors.red + line + reset);
+const { getContentToSave, serviceRequested } = require('./lib/utils');
+const { colors, reset } = require('./lib/colors');
+const schema = require('./lib/pattern');
 
-                break;
-            case 'update':
-                console.log(colors.green + line + reset);
-                break;
-            case 'help':
-                process.stdout.write('options : \n save, \n read, \n delete, \n update')
-                rl.prompt()
-                break;
-            case 'exit':
-                let count = 0;
-                setInterval(() => {
-                    count++
-                    process.stdout.write('.')
-                    if (count === 30) {
-                        process.stdout.write('\n \x1B[31mbye \n')
-                        process.exit(0)
-                    }
-                }, 50);
-                break;
-            default:
-                process.stdout.write('\x1B[31mtry again ! \n' + reset)
-                rl.prompt()
-                break;
-        }
-    })
+exports.start_program = (argv) => {
+    console.log(argv, argv.length);
+
+    if (argv.length > 0) { return Promise.resolve(argv) }
+    return new Promise((resolve, reject) => {
+        rl.prompt();
+        rl.on('line', line => {
+            line = line.trim().toLowerCase();
+            dispatcher(line)
+                .then(res => {
+                    let args = Array.isArray(res) ? ['--' + line, ...res] : ['--' + line]
+                    console.log(args);
+
+                    resolve(args)
+                })
+                .catch(err => {
+                    console.log(err)
+                    process.stdout.write('\x1B[31mtry again ! \n' + reset)
+                })
+        })
+    });
 }
+
+const dispatcher = (line) => {
+    if (!schema.arg_schema['--' + line]) {
+        return Promise.resolve({ err: 'not a valid command ...\n', readline: rl })
+    }
+    const { pattern } = schema.arg_schema['--' + line]
+    if (pattern.length == 0) { return Promise.resolve(line); }
+    if (line == 'save') { return getContentToSave(rl) }
+    if (line == 'get') { return serviceRequested(rl) }
+}
+
