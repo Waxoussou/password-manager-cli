@@ -10,9 +10,7 @@ const { colors, reset } = require('./lib/colors');
 const schema = require('./lib/pattern');
 
 exports.start_program = (argv) => {
-    console.log(argv, argv.length);
-
-    if (argv.length > 0) { return Promise.resolve(argv) }
+    if (argv.length > 0) { return Promise.resolve(argv) };
     return new Promise((resolve, reject) => {
         rl.prompt();
         rl.on('line', line => {
@@ -20,25 +18,23 @@ exports.start_program = (argv) => {
             dispatcher(line)
                 .then(res => {
                     let args = Array.isArray(res) ? ['--' + line, ...res] : ['--' + line]
-                    console.log(args);
-
                     resolve(args)
                 })
                 .catch(err => {
                     console.log(err)
                     process.stdout.write('\x1B[31mtry again ! \n' + reset)
                 })
-        })
+        });
     });
 }
 
 const dispatcher = (line) => {
     if (!schema.arg_schema['--' + line]) {
         return Promise.resolve({ err: 'not a valid command ...\n', readline: rl })
-    }
-    const { pattern } = schema.arg_schema['--' + line]
-    if (pattern.length == 0) { return Promise.resolve(line); }
-    if (line == 'save') { return getContentToSave(rl) }
-    if (line == 'get') { return serviceRequested(rl) }
+    };
+    const { pattern } = schema.arg_schema['--' + line];
+    if (pattern.length == 0) { return Promise.resolve(line) };
+    if (line == 'save') { return getContentToSave(rl) };
+    if (line == 'get' || line == 'delete') { return serviceRequested(rl) };
 }
 
